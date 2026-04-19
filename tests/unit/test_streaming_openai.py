@@ -46,9 +46,11 @@ def mock_auth_manager():
 
 
 @pytest.fixture
-def mock_http_client():
+def mock_http_client(mock_response):
     """Mock for httpx.AsyncClient."""
     client = AsyncMock()
+    # Support for callable API: await mock_http_client() -> mock_response
+    client.return_value = mock_response
     return client
 
 
@@ -58,6 +60,8 @@ def mock_response():
     response = AsyncMock()
     response.status_code = 200
     response.aclose = AsyncMock()
+    # Support for callable API: await mock_response() -> response
+    response.return_value = response
     return response
 
 
@@ -83,13 +87,15 @@ class TestStreamKiroToOpenai:
         print("Action: Streaming to OpenAI format...")
         chunks = []
         
-        with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
-            with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
-                async for chunk in stream_kiro_to_openai(
-                    mock_http_client, mock_response, "claude-sonnet-4",
-                    mock_model_cache, mock_auth_manager
-                ):
-                    chunks.append(chunk)
+        with patch('kiro.streaming_core.parse_kiro_stream', mock_parse_kiro_stream):
+            with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
+                with patch('kiro.streaming_core.parse_bracket_tool_calls', return_value=[]):
+                    with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
+                        async for chunk in stream_kiro_to_openai(
+                            mock_http_client, mock_response, "claude-sonnet-4",
+                            mock_model_cache, mock_auth_manager
+                        ):
+                            chunks.append(chunk)
         
         print(f"Received {len(chunks)} chunks")
         
@@ -112,13 +118,15 @@ class TestStreamKiroToOpenai:
         print("Action: Streaming to OpenAI format...")
         chunks = []
         
-        with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
-            with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
-                async for chunk in stream_kiro_to_openai(
-                    mock_http_client, mock_response, "claude-sonnet-4",
-                    mock_model_cache, mock_auth_manager
-                ):
-                    chunks.append(chunk)
+        with patch('kiro.streaming_core.parse_kiro_stream', mock_parse_kiro_stream):
+            with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
+                with patch('kiro.streaming_core.parse_bracket_tool_calls', return_value=[]):
+                    with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
+                        async for chunk in stream_kiro_to_openai(
+                            mock_http_client, mock_response, "claude-sonnet-4",
+                            mock_model_cache, mock_auth_manager
+                        ):
+                            chunks.append(chunk)
         
         print(f"Received {len(chunks)} chunks")
         
@@ -141,13 +149,15 @@ class TestStreamKiroToOpenai:
         print("Action: Streaming to OpenAI format...")
         chunks = []
         
-        with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
-            with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
-                async for chunk in stream_kiro_to_openai(
-                    mock_http_client, mock_response, "claude-sonnet-4",
-                    mock_model_cache, mock_auth_manager
-                ):
-                    chunks.append(chunk)
+        with patch('kiro.streaming_core.parse_kiro_stream', mock_parse_kiro_stream):
+            with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
+                with patch('kiro.streaming_core.parse_bracket_tool_calls', return_value=[]):
+                    with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
+                        async for chunk in stream_kiro_to_openai(
+                            mock_http_client, mock_response, "claude-sonnet-4",
+                            mock_model_cache, mock_auth_manager
+                        ):
+                            chunks.append(chunk)
         
         print(f"Received {len(chunks)} chunks")
         
@@ -170,13 +180,15 @@ class TestStreamKiroToOpenai:
         print("Action: Streaming to OpenAI format...")
         chunks = []
         
-        with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
-            with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
-                async for chunk in stream_kiro_to_openai(
-                    mock_http_client, mock_response, "claude-sonnet-4",
-                    mock_model_cache, mock_auth_manager
-                ):
-                    chunks.append(chunk)
+        with patch('kiro.streaming_core.parse_kiro_stream', mock_parse_kiro_stream):
+            with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
+                with patch('kiro.streaming_core.parse_bracket_tool_calls', return_value=[]):
+                    with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
+                        async for chunk in stream_kiro_to_openai(
+                            mock_http_client, mock_response, "claude-sonnet-4",
+                            mock_model_cache, mock_auth_manager
+                        ):
+                            chunks.append(chunk)
         
         print(f"Received {len(chunks)} chunks")
         
@@ -206,13 +218,15 @@ class TestStreamKiroToOpenai:
         print("Action: Streaming to OpenAI format...")
         chunks = []
         
-        with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
-            with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
-                async for chunk in stream_kiro_to_openai(
-                    mock_http_client, mock_response, "claude-sonnet-4",
-                    mock_model_cache, mock_auth_manager
-                ):
-                    chunks.append(chunk)
+        with patch('kiro.streaming_core.parse_kiro_stream', mock_parse_kiro_stream):
+            with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
+                with patch('kiro.streaming_core.parse_bracket_tool_calls', return_value=[]):
+                    with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
+                        async for chunk in stream_kiro_to_openai(
+                            mock_http_client, mock_response, "claude-sonnet-4",
+                            mock_model_cache, mock_auth_manager
+                        ):
+                            chunks.append(chunk)
         
         print(f"Received {len(chunks)} chunks")
         
@@ -243,13 +257,15 @@ class TestStreamKiroToOpenai:
         print("Action: Streaming to OpenAI format...")
         chunks = []
         
-        with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
-            with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
-                async for chunk in stream_kiro_to_openai(
-                    mock_http_client, mock_response, "claude-sonnet-4",
-                    mock_model_cache, mock_auth_manager
-                ):
-                    chunks.append(chunk)
+        with patch('kiro.streaming_core.parse_kiro_stream', mock_parse_kiro_stream):
+            with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
+                with patch('kiro.streaming_core.parse_bracket_tool_calls', return_value=[]):
+                    with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
+                        async for chunk in stream_kiro_to_openai(
+                            mock_http_client, mock_response, "claude-sonnet-4",
+                            mock_model_cache, mock_auth_manager
+                        ):
+                            chunks.append(chunk)
         
         print(f"Received {len(chunks)} chunks")
         
@@ -288,13 +304,15 @@ class TestStreamKiroToOpenai:
         print("Action: Streaming to OpenAI format...")
         chunks = []
         
-        with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
-            with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
-                async for chunk in stream_kiro_to_openai(
-                    mock_http_client, mock_response, "claude-sonnet-4",
-                    mock_model_cache, mock_auth_manager
-                ):
-                    chunks.append(chunk)
+        with patch('kiro.streaming_core.parse_kiro_stream', mock_parse_kiro_stream):
+            with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
+                with patch('kiro.streaming_core.parse_bracket_tool_calls', return_value=[]):
+                    with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
+                        async for chunk in stream_kiro_to_openai(
+                            mock_http_client, mock_response, "claude-sonnet-4",
+                            mock_model_cache, mock_auth_manager
+                        ):
+                            chunks.append(chunk)
         
         print(f"Received {len(chunks)} chunks")
         
@@ -318,13 +336,15 @@ class TestStreamKiroToOpenai:
         print("Action: Streaming to OpenAI format...")
         chunks = []
         
-        with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
-            with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
-                async for chunk in stream_kiro_to_openai(
-                    mock_http_client, mock_response, "claude-sonnet-4",
-                    mock_model_cache, mock_auth_manager
-                ):
-                    chunks.append(chunk)
+        with patch('kiro.streaming_core.parse_kiro_stream', mock_parse_kiro_stream):
+            with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
+                with patch('kiro.streaming_core.parse_bracket_tool_calls', return_value=[]):
+                    with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
+                        async for chunk in stream_kiro_to_openai(
+                            mock_http_client, mock_response, "claude-sonnet-4",
+                            mock_model_cache, mock_auth_manager
+                        ):
+                            chunks.append(chunk)
         
         print(f"Received {len(chunks)} chunks")
         
@@ -346,13 +366,15 @@ class TestStreamKiroToOpenai:
         
         print("Action: Streaming to OpenAI format...")
         
-        with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
-            with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
-                async for chunk in stream_kiro_to_openai(
-                    mock_http_client, mock_response, "claude-sonnet-4",
-                    mock_model_cache, mock_auth_manager
-                ):
-                    pass
+        with patch('kiro.streaming_core.parse_kiro_stream', mock_parse_kiro_stream):
+            with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
+                with patch('kiro.streaming_core.parse_bracket_tool_calls', return_value=[]):
+                    with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
+                        async for chunk in stream_kiro_to_openai(
+                            mock_http_client, mock_response, "claude-sonnet-4",
+                            mock_model_cache, mock_auth_manager
+                        ):
+                            pass
         
         print("Check: response.aclose() should be called...")
         mock_response.aclose.assert_called()
@@ -372,16 +394,18 @@ class TestStreamKiroToOpenai:
         
         print("Action: Streaming to OpenAI format with error...")
         
-        with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
-            with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
-                try:
-                    async for chunk in stream_kiro_to_openai(
-                        mock_http_client, mock_response, "claude-sonnet-4",
-                        mock_model_cache, mock_auth_manager
-                    ):
-                        pass
-                except RuntimeError:
-                    pass
+        with patch('kiro.streaming_core.parse_kiro_stream', mock_parse_kiro_stream):
+            with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
+                with patch('kiro.streaming_core.parse_bracket_tool_calls', return_value=[]):
+                    with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
+                        try:
+                            async for chunk in stream_kiro_to_openai(
+                                mock_http_client, mock_response, "claude-sonnet-4",
+                                mock_model_cache, mock_auth_manager
+                            ):
+                                pass
+                        except RuntimeError:
+                            pass
         
         print("Check: response.aclose() should be called...")
         mock_response.aclose.assert_called()
@@ -410,14 +434,16 @@ class TestStreamingOpenaiThinkingContent:
         print("Action: Streaming to OpenAI format with reasoning mode...")
         chunks = []
         
-        with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
-            with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
-                with patch('kiro.streaming_openai.FAKE_REASONING_HANDLING', 'as_reasoning_content'):
-                    async for chunk in stream_kiro_to_openai(
-                        mock_http_client, mock_response, "claude-sonnet-4",
-                        mock_model_cache, mock_auth_manager
-                    ):
-                        chunks.append(chunk)
+        with patch('kiro.streaming_core.parse_kiro_stream', mock_parse_kiro_stream):
+            with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
+                with patch('kiro.streaming_core.parse_bracket_tool_calls', return_value=[]):
+                    with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
+                        with patch('kiro.streaming_openai.FAKE_REASONING_HANDLING', 'as_reasoning_content'):
+                            async for chunk in stream_kiro_to_openai(
+                                mock_http_client, mock_response, "claude-sonnet-4",
+                                mock_model_cache, mock_auth_manager
+                            ):
+                                chunks.append(chunk)
         
         print(f"Received {len(chunks)} chunks")
         
@@ -442,14 +468,16 @@ class TestStreamingOpenaiThinkingContent:
         print("Action: Streaming to OpenAI format with content mode...")
         chunks = []
         
-        with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
-            with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
-                with patch('kiro.streaming_openai.FAKE_REASONING_HANDLING', 'include_as_text'):
-                    async for chunk in stream_kiro_to_openai(
-                        mock_http_client, mock_response, "claude-sonnet-4",
-                        mock_model_cache, mock_auth_manager
-                    ):
-                        chunks.append(chunk)
+        with patch('kiro.streaming_core.parse_kiro_stream', mock_parse_kiro_stream):
+            with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
+                with patch('kiro.streaming_core.parse_bracket_tool_calls', return_value=[]):
+                    with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
+                        with patch('kiro.streaming_openai.FAKE_REASONING_HANDLING', 'include_as_text'):
+                            async for chunk in stream_kiro_to_openai(
+                                mock_http_client, mock_response, "claude-sonnet-4",
+                                mock_model_cache, mock_auth_manager
+                            ):
+                                chunks.append(chunk)
         
         print(f"Received {len(chunks)} chunks")
         
@@ -483,13 +511,15 @@ class TestStreamingOpenaiNoneProtection:
         print("Action: Streaming to OpenAI format...")
         chunks = []
         
-        with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
-            with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
-                async for chunk in stream_kiro_to_openai(
-                    mock_http_client, mock_response, "claude-sonnet-4",
-                    mock_model_cache, mock_auth_manager
-                ):
-                    chunks.append(chunk)
+        with patch('kiro.streaming_core.parse_kiro_stream', mock_parse_kiro_stream):
+            with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
+                with patch('kiro.streaming_core.parse_bracket_tool_calls', return_value=[]):
+                    with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
+                        async for chunk in stream_kiro_to_openai(
+                            mock_http_client, mock_response, "claude-sonnet-4",
+                            mock_model_cache, mock_auth_manager
+                        ):
+                            chunks.append(chunk)
         
         print(f"Received {len(chunks)} chunks")
         
@@ -528,13 +558,15 @@ class TestStreamingOpenaiNoneProtection:
         print("Action: Streaming to OpenAI format...")
         chunks = []
         
-        with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
-            with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
-                async for chunk in stream_kiro_to_openai(
-                    mock_http_client, mock_response, "claude-sonnet-4",
-                    mock_model_cache, mock_auth_manager
-                ):
-                    chunks.append(chunk)
+        with patch('kiro.streaming_core.parse_kiro_stream', mock_parse_kiro_stream):
+            with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
+                with patch('kiro.streaming_core.parse_bracket_tool_calls', return_value=[]):
+                    with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
+                        async for chunk in stream_kiro_to_openai(
+                            mock_http_client, mock_response, "claude-sonnet-4",
+                            mock_model_cache, mock_auth_manager
+                        ):
+                            chunks.append(chunk)
         
         print(f"Received {len(chunks)} chunks")
         
@@ -573,13 +605,15 @@ class TestStreamingOpenaiNoneProtection:
         print("Action: Streaming to OpenAI format...")
         chunks = []
         
-        with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
-            with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
-                async for chunk in stream_kiro_to_openai(
-                    mock_http_client, mock_response, "claude-sonnet-4",
-                    mock_model_cache, mock_auth_manager
-                ):
-                    chunks.append(chunk)
+        with patch('kiro.streaming_core.parse_kiro_stream', mock_parse_kiro_stream):
+            with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
+                with patch('kiro.streaming_core.parse_bracket_tool_calls', return_value=[]):
+                    with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
+                        async for chunk in stream_kiro_to_openai(
+                            mock_http_client, mock_response, "claude-sonnet-4",
+                            mock_model_cache, mock_auth_manager
+                        ):
+                            chunks.append(chunk)
         
         print(f"Received {len(chunks)} chunks")
         
@@ -856,12 +890,14 @@ class TestCollectStreamResponse:
         
         print("Action: Collecting stream response...")
         
-        with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
-            with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
-                result = await collect_stream_response(
-                    mock_http_client, mock_response, "claude-sonnet-4",
-                    mock_model_cache, mock_auth_manager
-                )
+        with patch('kiro.streaming_core.parse_kiro_stream', mock_parse_kiro_stream):
+            with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
+                with patch('kiro.streaming_core.parse_bracket_tool_calls', return_value=[]):
+                    with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
+                        result = await collect_stream_response(
+                            mock_http_client, mock_response, "claude-sonnet-4",
+                            mock_model_cache, mock_auth_manager
+                        )
         
         print(f"Result: {result}")
         
@@ -882,13 +918,15 @@ class TestCollectStreamResponse:
         
         print("Action: Collecting stream response with reasoning mode...")
         
-        with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
-            with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
-                with patch('kiro.streaming_openai.FAKE_REASONING_HANDLING', 'as_reasoning_content'):
-                    result = await collect_stream_response(
-                        mock_http_client, mock_response, "claude-sonnet-4",
-                        mock_model_cache, mock_auth_manager
-                    )
+        with patch('kiro.streaming_core.parse_kiro_stream', mock_parse_kiro_stream):
+            with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
+                with patch('kiro.streaming_core.parse_bracket_tool_calls', return_value=[]):
+                    with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
+                        with patch('kiro.streaming_openai.FAKE_REASONING_HANDLING', 'as_reasoning_content'):
+                            result = await collect_stream_response(
+                                mock_http_client, mock_response, "claude-sonnet-4",
+                                mock_model_cache, mock_auth_manager
+                            )
         
         print(f"Result: {result}")
         
@@ -913,12 +951,14 @@ class TestCollectStreamResponse:
         
         print("Action: Collecting stream response...")
         
-        with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
-            with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
-                result = await collect_stream_response(
-                    mock_http_client, mock_response, "claude-sonnet-4",
-                    mock_model_cache, mock_auth_manager
-                )
+        with patch('kiro.streaming_core.parse_kiro_stream', mock_parse_kiro_stream):
+            with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
+                with patch('kiro.streaming_core.parse_bracket_tool_calls', return_value=[]):
+                    with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
+                        result = await collect_stream_response(
+                            mock_http_client, mock_response, "claude-sonnet-4",
+                            mock_model_cache, mock_auth_manager
+                        )
         
         print(f"Result: {result}")
         
@@ -944,12 +984,14 @@ class TestCollectStreamResponse:
         
         print("Action: Collecting stream response...")
         
-        with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
-            with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
-                result = await collect_stream_response(
-                    mock_http_client, mock_response, "claude-sonnet-4",
-                    mock_model_cache, mock_auth_manager
-                )
+        with patch('kiro.streaming_core.parse_kiro_stream', mock_parse_kiro_stream):
+            with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
+                with patch('kiro.streaming_core.parse_bracket_tool_calls', return_value=[]):
+                    with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
+                        result = await collect_stream_response(
+                            mock_http_client, mock_response, "claude-sonnet-4",
+                            mock_model_cache, mock_auth_manager
+                        )
         
         print(f"Result: {result}")
         
@@ -973,12 +1015,14 @@ class TestCollectStreamResponse:
         
         print("Action: Collecting stream response...")
         
-        with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
-            with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
-                result = await collect_stream_response(
-                    mock_http_client, mock_response, "claude-sonnet-4",
-                    mock_model_cache, mock_auth_manager
-                )
+        with patch('kiro.streaming_core.parse_kiro_stream', mock_parse_kiro_stream):
+            with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
+                with patch('kiro.streaming_core.parse_bracket_tool_calls', return_value=[]):
+                    with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
+                        result = await collect_stream_response(
+                            mock_http_client, mock_response, "claude-sonnet-4",
+                            mock_model_cache, mock_auth_manager
+                        )
         
         print(f"Result: {result}")
         
@@ -1004,12 +1048,14 @@ class TestCollectStreamResponse:
         
         print("Action: Collecting stream response...")
         
-        with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
-            with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
-                result = await collect_stream_response(
-                    mock_http_client, mock_response, "claude-sonnet-4",
-                    mock_model_cache, mock_auth_manager
-                )
+        with patch('kiro.streaming_core.parse_kiro_stream', mock_parse_kiro_stream):
+            with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
+                with patch('kiro.streaming_core.parse_bracket_tool_calls', return_value=[]):
+                    with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
+                        result = await collect_stream_response(
+                            mock_http_client, mock_response, "claude-sonnet-4",
+                            mock_model_cache, mock_auth_manager
+                        )
         
         print(f"Result: {result}")
         
@@ -1030,12 +1076,14 @@ class TestCollectStreamResponse:
         
         print("Action: Collecting stream response...")
         
-        with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
-            with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
-                result = await collect_stream_response(
-                    mock_http_client, mock_response, "claude-sonnet-4",
-                    mock_model_cache, mock_auth_manager
-                )
+        with patch('kiro.streaming_core.parse_kiro_stream', mock_parse_kiro_stream):
+            with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
+                with patch('kiro.streaming_core.parse_bracket_tool_calls', return_value=[]):
+                    with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
+                        result = await collect_stream_response(
+                            mock_http_client, mock_response, "claude-sonnet-4",
+                            mock_model_cache, mock_auth_manager
+                        )
         
         print(f"Result: {result}")
         
@@ -1055,12 +1103,14 @@ class TestCollectStreamResponse:
         
         print("Action: Collecting stream response...")
         
-        with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
-            with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
-                result = await collect_stream_response(
-                    mock_http_client, mock_response, "claude-sonnet-4",
-                    mock_model_cache, mock_auth_manager
-                )
+        with patch('kiro.streaming_core.parse_kiro_stream', mock_parse_kiro_stream):
+            with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
+                with patch('kiro.streaming_core.parse_bracket_tool_calls', return_value=[]):
+                    with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
+                        result = await collect_stream_response(
+                            mock_http_client, mock_response, "claude-sonnet-4",
+                            mock_model_cache, mock_auth_manager
+                        )
         
         print(f"ID: {result['id']}")
         
@@ -1080,12 +1130,14 @@ class TestCollectStreamResponse:
         
         print("Action: Collecting stream response...")
         
-        with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
-            with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
-                result = await collect_stream_response(
-                    mock_http_client, mock_response, "claude-sonnet-4",
-                    mock_model_cache, mock_auth_manager
-                )
+        with patch('kiro.streaming_core.parse_kiro_stream', mock_parse_kiro_stream):
+            with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
+                with patch('kiro.streaming_core.parse_bracket_tool_calls', return_value=[]):
+                    with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
+                        result = await collect_stream_response(
+                            mock_http_client, mock_response, "claude-sonnet-4",
+                            mock_model_cache, mock_auth_manager
+                        )
         
         print(f"Model: {result['model']}")
         
@@ -1105,12 +1157,14 @@ class TestCollectStreamResponse:
         
         print("Action: Collecting stream response...")
         
-        with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
-            with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
-                result = await collect_stream_response(
-                    mock_http_client, mock_response, "claude-sonnet-4",
-                    mock_model_cache, mock_auth_manager
-                )
+        with patch('kiro.streaming_core.parse_kiro_stream', mock_parse_kiro_stream):
+            with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
+                with patch('kiro.streaming_core.parse_bracket_tool_calls', return_value=[]):
+                    with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
+                        result = await collect_stream_response(
+                            mock_http_client, mock_response, "claude-sonnet-4",
+                            mock_model_cache, mock_auth_manager
+                        )
         
         print(f"Object: {result['object']}")
         
@@ -1164,15 +1218,17 @@ class TestStreamingOpenaiErrorHandling:
         print("Action: Streaming to OpenAI format with GeneratorExit...")
         chunks = []
         
-        with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
-            with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
-                # GeneratorExit is caught internally and not re-raised
-                # This is correct behavior - client disconnect should be handled gracefully
-                async for chunk in stream_kiro_to_openai(
-                    mock_http_client, mock_response, "claude-sonnet-4",
-                    mock_model_cache, mock_auth_manager
-                ):
-                    chunks.append(chunk)
+        with patch('kiro.streaming_core.parse_kiro_stream', mock_parse_kiro_stream):
+            with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
+                with patch('kiro.streaming_core.parse_bracket_tool_calls', return_value=[]):
+                    with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
+                        # GeneratorExit is caught internally and not re-raised
+                        # This is correct behavior - client disconnect should be handled gracefully
+                        async for chunk in stream_kiro_to_openai(
+                            mock_http_client, mock_response, "claude-sonnet-4",
+                            mock_model_cache, mock_auth_manager
+                        ):
+                            chunks.append(chunk)
         
         print(f"Received {len(chunks)} chunks before disconnect")
         # Response should be closed
@@ -1193,14 +1249,16 @@ class TestStreamingOpenaiErrorHandling:
         
         print("Action: Streaming to OpenAI format with RuntimeError...")
         
-        with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
-            with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
-                with pytest.raises(RuntimeError) as exc_info:
-                    async for chunk in stream_kiro_to_openai(
-                        mock_http_client, mock_response, "claude-sonnet-4",
-                        mock_model_cache, mock_auth_manager
-                    ):
-                        pass
+        with patch('kiro.streaming_core.parse_kiro_stream', mock_parse_kiro_stream):
+            with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
+                with patch('kiro.streaming_core.parse_bracket_tool_calls', return_value=[]):
+                    with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
+                        with pytest.raises(RuntimeError) as exc_info:
+                            async for chunk in stream_kiro_to_openai(
+                                mock_http_client, mock_response, "claude-sonnet-4",
+                                mock_model_cache, mock_auth_manager
+                            ):
+                                pass
         
         print(f"Caught exception: {exc_info.value}")
         assert "Test error" in str(exc_info.value)
@@ -1222,14 +1280,16 @@ class TestStreamingOpenaiErrorHandling:
         
         print("Action: Streaming to OpenAI format with error and aclose error...")
         
-        with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
-            with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
-                with pytest.raises(RuntimeError) as exc_info:
-                    async for chunk in stream_kiro_to_openai(
-                        mock_http_client, mock_response, "claude-sonnet-4",
-                        mock_model_cache, mock_auth_manager
-                    ):
-                        pass
+        with patch('kiro.streaming_core.parse_kiro_stream', mock_parse_kiro_stream):
+            with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
+                with patch('kiro.streaming_core.parse_bracket_tool_calls', return_value=[]):
+                    with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
+                        with pytest.raises(RuntimeError) as exc_info:
+                            async for chunk in stream_kiro_to_openai(
+                                mock_http_client, mock_response, "claude-sonnet-4",
+                                mock_model_cache, mock_auth_manager
+                            ):
+                                pass
         
         print(f"Caught exception: {exc_info.value}")
         assert "Original error" in str(exc_info.value)
@@ -1339,13 +1399,15 @@ class TestStreamingOpenaiMeteringData:
         print("Action: Streaming to OpenAI format...")
         chunks = []
         
-        with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
-            with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
-                async for chunk in stream_kiro_to_openai(
-                    mock_http_client, mock_response, "claude-sonnet-4",
-                    mock_model_cache, mock_auth_manager
-                ):
-                    chunks.append(chunk)
+        with patch('kiro.streaming_core.parse_kiro_stream', mock_parse_kiro_stream):
+            with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
+                with patch('kiro.streaming_core.parse_bracket_tool_calls', return_value=[]):
+                    with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
+                        async for chunk in stream_kiro_to_openai(
+                            mock_http_client, mock_response, "claude-sonnet-4",
+                            mock_model_cache, mock_auth_manager
+                        ):
+                            chunks.append(chunk)
         
         print(f"Received {len(chunks)} chunks")
         
@@ -1377,13 +1439,15 @@ class TestStreamingOpenaiTruncationDetection:
         print("Action: Streaming to OpenAI format...")
         chunks = []
         
-        with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
-            with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
-                async for chunk in stream_kiro_to_openai(
-                    mock_http_client, mock_response, "claude-sonnet-4",
-                    mock_model_cache, mock_auth_manager
-                ):
-                    chunks.append(chunk)
+        with patch('kiro.streaming_core.parse_kiro_stream', mock_parse_kiro_stream):
+            with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
+                with patch('kiro.streaming_core.parse_bracket_tool_calls', return_value=[]):
+                    with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
+                        async for chunk in stream_kiro_to_openai(
+                            mock_http_client, mock_response, "claude-sonnet-4",
+                            mock_model_cache, mock_auth_manager
+                        ):
+                            chunks.append(chunk)
         
         print(f"Received {len(chunks)} chunks")
         
@@ -1412,13 +1476,15 @@ class TestStreamingOpenaiTruncationDetection:
         print("Action: Streaming to OpenAI format...")
         chunks = []
         
-        with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
-            with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
-                async for chunk in stream_kiro_to_openai(
-                    mock_http_client, mock_response, "claude-sonnet-4",
-                    mock_model_cache, mock_auth_manager
-                ):
-                    chunks.append(chunk)
+        with patch('kiro.streaming_core.parse_kiro_stream', mock_parse_kiro_stream):
+            with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
+                with patch('kiro.streaming_core.parse_bracket_tool_calls', return_value=[]):
+                    with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
+                        async for chunk in stream_kiro_to_openai(
+                            mock_http_client, mock_response, "claude-sonnet-4",
+                            mock_model_cache, mock_auth_manager
+                        ):
+                            chunks.append(chunk)
         
         print(f"Received {len(chunks)} chunks")
         
@@ -1443,13 +1509,15 @@ class TestStreamingOpenaiTruncationDetection:
         print("Action: Streaming to OpenAI format...")
         chunks = []
         
-        with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
-            with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
-                async for chunk in stream_kiro_to_openai(
-                    mock_http_client, mock_response, "claude-sonnet-4",
-                    mock_model_cache, mock_auth_manager
-                ):
-                    chunks.append(chunk)
+        with patch('kiro.streaming_core.parse_kiro_stream', mock_parse_kiro_stream):
+            with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
+                with patch('kiro.streaming_core.parse_bracket_tool_calls', return_value=[]):
+                    with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
+                        async for chunk in stream_kiro_to_openai(
+                            mock_http_client, mock_response, "claude-sonnet-4",
+                            mock_model_cache, mock_auth_manager
+                        ):
+                            chunks.append(chunk)
         
         print(f"Received {len(chunks)} chunks")
         
@@ -1473,12 +1541,14 @@ class TestStreamingOpenaiTruncationDetection:
         
         print("Action: Collecting stream response...")
         
-        with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
-            with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
-                result = await collect_stream_response(
-                    mock_http_client, mock_response, "claude-sonnet-4",
-                    mock_model_cache, mock_auth_manager
-                )
+        with patch('kiro.streaming_core.parse_kiro_stream', mock_parse_kiro_stream):
+            with patch('kiro.streaming_openai.parse_kiro_stream', mock_parse_kiro_stream):
+                with patch('kiro.streaming_core.parse_bracket_tool_calls', return_value=[]):
+                    with patch('kiro.streaming_openai.parse_bracket_tool_calls', return_value=[]):
+                        result = await collect_stream_response(
+                            mock_http_client, mock_response, "claude-sonnet-4",
+                            mock_model_cache, mock_auth_manager
+                        )
         
         print(f"Result finish_reason: {result['choices'][0]['finish_reason']}")
         

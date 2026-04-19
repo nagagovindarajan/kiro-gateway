@@ -52,6 +52,8 @@ def mock_response():
     response = AsyncMock()
     response.status_code = 200
     response.aclose = AsyncMock()
+    # Support for callable API: await mock_response() -> response
+    response.return_value = response
     return response
 
 

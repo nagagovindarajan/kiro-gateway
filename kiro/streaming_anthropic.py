@@ -34,7 +34,7 @@ Reference: https://docs.anthropic.com/en/api/messages-streaming
 import json
 import time
 import uuid
-from typing import TYPE_CHECKING, AsyncGenerator, Dict, List, Optional, Any
+from typing import TYPE_CHECKING, AsyncGenerator, Dict, List, Optional, Any, Callable, Awaitable
 
 import httpx
 from loguru import logger
@@ -719,7 +719,7 @@ async def stream_kiro_to_anthropic(
 
 
 async def collect_anthropic_response(
-    response: httpx.Response,
+    make_request: Callable[[], Awaitable[httpx.Response]],
     model: str,
     model_cache: "ModelInfoCache",
     auth_manager: "KiroAuthManager",
@@ -733,7 +733,7 @@ async def collect_anthropic_response(
     Used for non-streaming mode.
     
     Args:
-        response: HTTP response with stream
+        make_request: Async function that returns an httpx.Response
         model: Model name
         model_cache: Model cache
         auth_manager: Authentication manager
@@ -757,8 +757,8 @@ async def collect_anthropic_response(
         )
         input_tokens = request_token_stats["total_tokens"]
     
-    # Collect stream result
-    result = await collect_stream_to_result(response)
+    # Collect stream result with automatic retries
+    result = await collect_stream_to_result(make_request)
     upstream_cache_usage = _extract_cache_usage_fields(result.usage)
     
     # Build content blocks

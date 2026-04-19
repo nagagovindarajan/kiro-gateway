@@ -322,14 +322,25 @@ async def chat_completions(request: Request, request_data: ChatCompletionRequest
         # Make request to Kiro API (for both streaming and non-streaming modes)
         # Important: we wait for Kiro response BEFORE returning StreamingResponse,
         # so that 200 OK means Kiro accepted the request and started responding
-        response = await http_client.request_with_retry(
-            "POST",
-            url,
-            kiro_payload,
-            stream=True
-        )
-        
-        if response.status_code != 200:
+        # so that 200 OK means Kiro accepted the request        # Define request factory for retries during collection
+        async def make_kiro_request():
+            return await http_client.request_with_retry(
+                "POST",
+                url,
+                kiro_payload,
+                stream=True
+            )
+            
+        if request_data.stream:
+            # For streaming mode, we still make the initial request here 
+            # to catch errors early and return a proper JSON error if needed
+            response = await make_kiro_request()
+        else:
+            # For non-streaming mode, we don't make the request here;
+            # collect_stream_response will handle it with its own retry logic
+            response = None
+            
+        if response and response.status_code != 200:
             try:
                 error_content = await response.aread()
             except Exception:
@@ -439,7 +450,7 @@ async def chat_completions(request: Request, request_data: ChatCompletionRequest
             # Non-streaming mode - collect entire response
             openai_response = await collect_stream_response(
                 http_client.client,
-                response,
+                make_kiro_request,
                 request_data.model,
                 model_cache,
                 auth_manager,

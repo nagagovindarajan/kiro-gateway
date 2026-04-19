@@ -360,6 +360,12 @@ def extract_thinking_config_from_openai(request: ChatCompletionRequest) -> Think
         >>> extract_thinking_config_from_openai(request)
         ThinkingConfig(enabled=True, budget_tokens=3276)  # 80% of 4096
     """
+    # DIAGNOSTIC: Check if reasoning_effort is hiding in extra fields
+    if not request.reasoning_effort and hasattr(request, "model_extra") and request.model_extra:
+        extra_val = request.model_extra.get("reasoning_effort")
+        if extra_val:
+            logger.warning(f"DIAGNOSTIC: reasoning_effort found in extra_body! Value: {extra_val}. Check schema version.")
+    
     if not request.reasoning_effort:
         # No reasoning_effort specified → use defaults
         return ThinkingConfig(enabled=True, budget_tokens=None)
@@ -376,9 +382,12 @@ def extract_thinking_config_from_openai(request: ChatCompletionRequest) -> Think
         # NOT DEFAULT_MAX_INPUT_TOKENS (200000) - that's for INPUT
         max_tokens = 4096  # Standard output limit
     
+    # DIAGNOSTIC: Log raw inputs to check why budget might be None
+    logger.debug(f"DEBUG_THINKING_OPENAI: reasoning_effort={request.reasoning_effort}, max_tokens={request.max_tokens}, max_completion_tokens={request.max_completion_tokens}")
+    
     budget = reasoning_effort_to_budget(max_tokens, request.reasoning_effort)
     
-    logger.debug(
+    logger.info(
         f"Extracted thinking config from OpenAI: reasoning_effort='{request.reasoning_effort}', "
         f"max_tokens={max_tokens}, budget={budget}"
     )
@@ -425,7 +434,7 @@ def build_kiro_payload(
     # Extract thinking configuration from reasoning_effort
     thinking_config = extract_thinking_config_from_openai(request_data)
     
-    logger.debug(
+    logger.info(
         f"Converting OpenAI request: model={request_data.model} -> {model_id}, "
         f"messages={len(unified_messages)}, tools={len(unified_tools) if unified_tools else 0}, "
         f"system_prompt_length={len(system_prompt)}, "

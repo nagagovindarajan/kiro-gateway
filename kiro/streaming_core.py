@@ -286,24 +286,15 @@ async def _process_chunk(
 # Full Response Collection
 # ==================================================================================================
 
-async def collect_stream_to_result(
+from typing import Callable, Awaitable
+
+async def _collect_stream_to_result_internal(
     response: httpx.Response,
     first_token_timeout: float = FIRST_TOKEN_TIMEOUT,
     enable_thinking_parser: bool = True
 ) -> StreamResult:
     """
-    Collects full response from Kiro stream.
-    
-    This function consumes the entire stream and returns a StreamResult
-    with all accumulated data.
-    
-    Args:
-        response: HTTP response with stream
-        first_token_timeout: First token wait timeout
-        enable_thinking_parser: Whether to enable thinking block parsing
-    
-    Returns:
-        StreamResult with full content, thinking, tool calls, and usage
+    Internal helper to collect results from a single response stream.
     """
     result = StreamResult()
     full_content_for_bracket_tools = ""
@@ -328,6 +319,82 @@ async def collect_stream_to_result(
         result.tool_calls = deduplicate_tool_calls(result.tool_calls + bracket_tool_calls)
     
     return result
+
+
+async def collect_stream_to_result(
+    make_request: Callable[[], Awaitable[httpx.Response]],
+    first_token_timeout: float = FIRST_TOKEN_TIMEOUT,
+    enable_thinking_parser: bool = True,
+    max_retries: int = 3
+) -> StreamResult:
+    """
+    Collects full response from Kiro stream with automatic retries on network errors.
+    
+    This function is used for non-streaming requests. If the connection fails
+    mid-stream, it will retry the entire request up to max_retries times.
+    
+    Args:
+        make_request: Async function that returns an httpx.Response with stream=True
+        first_token_timeout: Timeout for first token
+        enable_thinking_parser: Whether to enable thinking block parsing
+        max_retries: Maximum number of collection attempts
+    
+    Returns:
+        StreamResult with full data
+    """
+    last_error = None
+    
+    for attempt in range(max_retries):
+        response = None
+        try:
+            if attempt > 0:
+                logger.warning(f"Retrying non-streaming collection (attempt {attempt + 1}/{max_retries})")
+            
+            response = await make_request()
+            
+            # Check for generic HTTP errors before collecting
+            if response.status_code != 200:
+                try:
+                    await response.aclose()
+                except Exception:
+                    pass
+                raise Exception(f"Upstream API error ({response.status_code})")
+            
+            # Collect from response
+            try:
+                return await _collect_stream_to_result_internal(
+                    response, 
+                    first_token_timeout=first_token_timeout,
+                    enable_thinking_parser=enable_thinking_parser
+                )
+            finally:
+                # Ensure response is closed
+                try:
+                    await response.aclose()
+                except Exception:
+                    pass
+                    
+        except Exception as e:
+            last_error = e
+            error_type = type(e).__name__
+            error_msg = str(e) if str(e) else "(empty message)"
+            
+            # Check if error is retryable (RemoteProtocolError, ReadTimeout, etc.)
+            is_retryable = (
+                "incomplete chunked read" in error_msg.lower() or
+                "peer closed connection" in error_msg.lower() or
+                isinstance(e, (httpx.TimeoutException, httpx.NetworkError))
+            )
+            
+            if is_retryable and attempt < max_retries - 1:
+                logger.warning(f"Transient error during collection: [{error_type}] {error_msg}. Retrying...")
+                continue
+            
+            logger.error(f"Failed to collect stream after {attempt + 1} attempts: [{error_type}] {error_msg}")
+            raise last_error
+            
+    # Should not reach here
+    raise last_error or Exception("Failed to collect stream response")
 
 
 # ==================================================================================================

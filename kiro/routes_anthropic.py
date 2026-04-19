@@ -363,14 +363,25 @@ async def messages(
         # Make request to Kiro API (for both streaming and non-streaming modes)
         # Important: we wait for Kiro response BEFORE returning StreamingResponse,
         # so that we can return proper HTTP error codes if Kiro fails
-        response = await http_client.request_with_retry(
-            "POST",
-            url,
-            kiro_payload,
-            stream=True
-        )
-        
-        if response.status_code != 200:
+        # Define request factory for retries during collection
+        async def make_kiro_request():
+            return await http_client.request_with_retry(
+                "POST",
+                url,
+                kiro_payload,
+                stream=True
+            )
+            
+        if request_data.stream:
+            # For streaming mode, we still make the initial request here 
+            # to catch errors early and return a proper JSON error if needed
+            response = await make_kiro_request()
+        else:
+            # For non-streaming mode, we don't make the request here;
+            # collect_anthropic_response will handle it with its own retry logic
+            response = None
+            
+        if response and response.status_code != 200:
             try:
                 error_content = await response.aread()
             except Exception:
@@ -477,7 +488,7 @@ async def messages(
         else:
             # Non-streaming mode - collect entire response
             anthropic_response = await collect_anthropic_response(
-                response,
+                make_kiro_request,
                 request_data.model,
                 model_cache,
                 auth_manager,

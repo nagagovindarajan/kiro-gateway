@@ -365,7 +365,41 @@ class TestKiroAuthManagerGetAccessToken:
             
             print("Verification: _refresh_token was NOT called (no network requests)...")
             mock_client.post.assert_not_called()
-    
+
+    @pytest.mark.asyncio
+    async def test_get_access_token_reloads_creds_file_when_expiring(self, temp_creds_file):
+        """
+        What it does: Verifies credentials file reload before refresh when token is expiring soon.
+        Purpose: Ensure externally updated KIRO_CREDS_FILE is picked up without server restart.
+        """
+        print("Setup: Creating KiroAuthManager with credentials file...")
+        manager = KiroAuthManager(creds_file=temp_creds_file)
+
+        print("Setup: Simulating stale in-memory token that is expiring soon...")
+        manager._access_token = "stale_token"
+        manager._expires_at = datetime.now(timezone.utc) + timedelta(seconds=30)
+
+        print("Setup: Updating credentials file with fresh token and far future expiry...")
+        fresh_data = {
+            "accessToken": "fresh_token_from_file",
+            "refreshToken": "fresh_refresh_from_file",
+            "expiresAt": "2099-01-01T00:00:00.000Z",
+            "profileArn": "arn:aws:codewhisperer:us-east-1:123456789:profile/test",
+            "region": "us-east-1"
+        }
+        with open(temp_creds_file, "w", encoding="utf-8") as f:
+            json.dump(fresh_data, f)
+
+        print("Action: Requesting token via get_access_token()...")
+        with patch.object(manager, '_refresh_token_request', new_callable=AsyncMock) as mock_refresh:
+            token = await manager.get_access_token()
+
+        print("Verification: Fresh token from file is returned...")
+        assert token == "fresh_token_from_file"
+
+        print("Verification: No network refresh was needed after file reload...")
+        mock_refresh.assert_not_awaited()
+
     @pytest.mark.asyncio
     async def test_get_access_token_thread_safety(self, valid_kiro_token, mock_kiro_token_response):
         """

@@ -145,6 +145,22 @@ def classify_network_error(error: Exception) -> NetworkErrorInfo:
             suggested_http_code=502
         )
     
+    # Analyze RemoteProtocolError (often wrapped by httpx)
+    if "incomplete chunked read" in error_str.lower() or "peer closed connection" in error_str.lower():
+        return NetworkErrorInfo(
+            category=ErrorCategory.CONNECTION_RESET,
+            user_message="Connection lost - the upstream server closed the connection unexpectedly during data transfer.",
+            troubleshooting_steps=[
+                "The server may have timed out or closed the connection prematurely",
+                "Try again in a few moments",
+                "Check your internet connection stability",
+                "If using a VPN or proxy, ensure it is stable and not timing out"
+            ],
+            technical_details=technical_details,
+            is_retryable=True,
+            suggested_http_code=502
+        )
+    
     # Generic httpx.RequestError (catch-all)
     if isinstance(error, httpx.RequestError):
         return NetworkErrorInfo(

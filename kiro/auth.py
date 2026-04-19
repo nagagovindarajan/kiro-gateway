@@ -878,7 +878,18 @@ class KiroAuthManager:
             # Token is valid and not expiring soon - just return it
             if self._access_token and not self.is_token_expiring_soon():
                 return self._access_token
-            
+  
+            # Credentials file mode: reload credentials first, external tools may have updated them
+            if self._creds_file and self.is_token_expiring_soon():
+                logger.debug("Credentials file mode: reloading credentials before refresh attempt")
+                self._load_credentials_from_file(self._creds_file)
+                # Auth type may change if refreshed credentials include/remove OIDC fields
+                self._detect_auth_type()
+                # Check if reloaded token is now valid
+                if self._access_token and not self.is_token_expiring_soon():
+                    logger.debug("Credentials file reload provided fresh token, no refresh needed")
+                    return self._access_token
+
             # SQLite mode: reload credentials first, kiro-cli might have updated them
             if self._sqlite_db and self.is_token_expiring_soon():
                 logger.debug("SQLite mode: reloading credentials before refresh attempt")

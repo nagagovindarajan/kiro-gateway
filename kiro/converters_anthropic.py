@@ -401,6 +401,12 @@ def extract_thinking_config_from_anthropic(request: AnthropicMessagesRequest) ->
         >>> extract_thinking_config_from_anthropic(request)
         ThinkingConfig(enabled=True, budget_tokens=8000)
     """
+    # DIAGNOSTIC: Check if thinking is hiding in extra fields
+    if not request.thinking and hasattr(request, "model_extra") and request.model_extra:
+        extra_val = request.model_extra.get("thinking")
+        if extra_val:
+            logger.warning(f"DIAGNOSTIC: thinking found in extra_body! Value: {extra_val}. Check schema version.")
+
     if not request.thinking:
         # No thinking specified → use defaults
         return ThinkingConfig(enabled=True, budget_tokens=None)
@@ -418,10 +424,12 @@ def extract_thinking_config_from_anthropic(request: AnthropicMessagesRequest) ->
     if thinking_type == "enabled":
         # Extract budget_tokens
         budget = request.thinking.get("budget_tokens")
-        if budget:
-            logger.debug(f"Extracted thinking config from Anthropic: type='enabled', budget={budget}")
+        # DIAGNOSTIC: Log raw inputs
+        logger.info(f"DEBUG_THINKING_ANTHROPIC: type='enabled', raw_budget={budget}")
         return ThinkingConfig(enabled=True, budget_tokens=budget)
     
+    # DIAGNOSTIC: Log unexpected thinking type
+    logger.debug(f"DEBUG_THINKING_ANTHROPIC: unexpected type='{thinking_type}'")
     # Unknown type → use defaults
     return ThinkingConfig(enabled=True, budget_tokens=None)
 
@@ -467,7 +475,7 @@ def anthropic_to_kiro(
     # Extract thinking configuration from thinking parameter
     thinking_config = extract_thinking_config_from_anthropic(request)
 
-    logger.debug(
+    logger.info(
         f"Converting Anthropic request: model={request.model} -> {model_id}, "
         f"messages={len(unified_messages)}, tools={len(unified_tools) if unified_tools else 0}, "
         f"system_prompt_length={len(system_prompt)}, "

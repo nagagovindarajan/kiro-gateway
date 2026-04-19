@@ -574,8 +574,8 @@ async def stream_with_first_token_retry(
 
 
 async def collect_stream_response(
+    make_request: Callable[[], Awaitable[httpx.Response]],
     client: httpx.AsyncClient,
-    response: httpx.Response,
     model: str,
     model_cache: "ModelInfoCache",
     auth_manager: "KiroAuthManager",
@@ -589,8 +589,8 @@ async def collect_stream_response(
     and forms a single response.
     
     Args:
+        make_request: Async function that returns an httpx.Response
         client: HTTP client
-        response: HTTP response with stream
         model: Model name
         model_cache: Model cache
         auth_manager: Authentication manager
@@ -600,52 +600,21 @@ async def collect_stream_response(
     Returns:
         Dictionary with full response in OpenAI chat.completion format
     """
-    full_content = ""
-    full_reasoning_content = ""
-    final_usage = None
-    tool_calls = []
-    finish_reason = "stop"  # Default fallback
+    # Use collect_stream_to_result from streaming_core which has built-in retries
+    from kiro.streaming_core import collect_stream_to_result
+    
+    # We need to adapt the generic StreamResult to OpenAI format
+    stream_result = await collect_stream_to_result(
+        make_request,
+        first_token_timeout=FIRST_TOKEN_TIMEOUT,
+        enable_thinking_parser=True
+    )
+    
+    full_content = stream_result.content
+    full_reasoning_content = stream_result.thinking_content
+    tool_calls = stream_result.tool_calls
     completion_id = generate_completion_id()
     
-    async for chunk_str in stream_kiro_to_openai(
-        client,
-        response,
-        model,
-        model_cache,
-        auth_manager,
-        request_messages=request_messages,
-        request_tools=request_tools
-    ):
-        if not chunk_str.startswith("data:"):
-            continue
-        
-        data_str = chunk_str[len("data:"):].strip()
-        if not data_str or data_str == "[DONE]":
-            continue
-        
-        try:
-            chunk_data = json.loads(data_str)
-            
-            # Extract data from chunk
-            delta = chunk_data.get("choices", [{}])[0].get("delta", {})
-            if "content" in delta:
-                full_content += delta["content"]
-            if "reasoning_content" in delta:
-                full_reasoning_content += delta["reasoning_content"]
-            if "tool_calls" in delta:
-                tool_calls.extend(delta["tool_calls"])
-            
-            # Extract finish_reason from chunk (streaming already calculated it correctly)
-            finish_reason_from_chunk = chunk_data.get("choices", [{}])[0].get("finish_reason")
-            if finish_reason_from_chunk:
-                finish_reason = finish_reason_from_chunk
-            
-            # Save usage from last chunk
-            if "usage" in chunk_data:
-                final_usage = chunk_data["usage"]
-                
-        except (json.JSONDecodeError, IndexError):
-            continue
     
     # Form final response
     message = {"role": "assistant", "content": full_content}
@@ -669,8 +638,36 @@ async def collect_stream_response(
             cleaned_tool_calls.append(cleaned_tc)
         message["tool_calls"] = cleaned_tool_calls
     
-    # Form usage for response
-    usage = final_usage or {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
+    # Determine finish_reason
+    if tool_calls:
+        finish_reason = "tool_calls"
+    elif stream_result.usage is None:
+        # If no usage event received, it's considered truncated
+        finish_reason = "length"
+    else:
+        finish_reason = "stop"
+    
+    # Count completion_tokens (output) using tiktoken
+    completion_tokens = count_tokens(full_content + full_reasoning_content)
+    
+    # Calculate total_tokens based on context_usage_percentage from Kiro API
+    prompt_tokens, total_tokens, _, _ = calculate_tokens_from_context_usage(
+        stream_result.context_usage_percentage, completion_tokens, model_cache, model
+    )
+    
+    # Fallback for prompt tokens
+    if prompt_tokens == 0 and request_messages:
+        prompt_tokens = count_message_tokens(request_messages, apply_claude_correction=False)
+        total_tokens = prompt_tokens + completion_tokens
+    
+    usage = {
+        "prompt_tokens": prompt_tokens,
+        "completion_tokens": completion_tokens,
+        "total_tokens": total_tokens or (prompt_tokens + completion_tokens)
+    }
+    
+    if stream_result.usage:
+        usage["credits_used"] = stream_result.usage
     
     # Log token info for debugging (non-streaming uses same logs from streaming)
     
