@@ -323,6 +323,8 @@ class AnthropicMessagesRequest(BaseModel):
 
     # Extended thinking (official Anthropic parameter)
     thinking: Optional[Dict[str, Any]] = None
+    effort: Optional[str] = None
+    output_config: Optional[Dict[str, Any]] = None
 
     # Tools
     tools: Optional[List[AnthropicTool]] = None
@@ -336,6 +338,31 @@ class AnthropicMessagesRequest(BaseModel):
     # Other parameters
     stop_sequences: Optional[List[str]] = None
     metadata: Optional[Dict[str, Any]] = None
+
+    model_config = {"extra": "allow"}
+
+
+class AnthropicCountTokensRequest(BaseModel):
+    """
+    Request to Anthropic Token Counting API (/v1/messages/count_tokens).
+
+    Attributes:
+        model: Model ID
+        messages: List of conversation messages
+        system: System prompt (optional, string or list of content blocks)
+        tools: List of available tools
+    """
+
+    model: str
+    messages: List[AnthropicMessage] = Field(min_length=1)
+
+    # Optional parameters
+    system: Optional[SystemPrompt] = None
+    tools: Optional[List[AnthropicTool]] = None
+    tool_choice: Optional[Union[ToolChoice, Dict[str, Any]]] = None
+    thinking: Optional[Dict[str, Any]] = None
+    effort: Optional[str] = None
+    output_config: Optional[Dict[str, Any]] = None
 
     model_config = {"extra": "allow"}
 
@@ -389,6 +416,14 @@ class AnthropicMessagesResponse(BaseModel):
     ] = None
     stop_sequence: Optional[str] = None
     usage: AnthropicUsage
+
+
+class AnthropicCountTokensResponse(BaseModel):
+    """
+    Response from Anthropic Token Counting API (/v1/messages/count_tokens).
+    """
+
+    input_tokens: int
 
 
 # ==================================================================================================

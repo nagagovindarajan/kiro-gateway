@@ -1811,7 +1811,7 @@ class TestExtractThinkingConfigFromOpenAI:
         
         print("Extracting thinking config...")
         config = extract_thinking_config_from_openai(request)
-        expected_budget = int(4096 * 0.80)  # Fallback to 4096
+        expected_budget = int(8192 * 0.80)  # Fallback to 8192
         
         print(f"Comparing: budget_tokens={config.budget_tokens}, expected={expected_budget}")
         assert config.budget_tokens == expected_budget

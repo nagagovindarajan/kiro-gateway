@@ -416,16 +416,41 @@ def extract_thinking_config_from_anthropic(request: AnthropicMessagesRequest) ->
         return ThinkingConfig(enabled=True, budget_tokens=None)
     
     thinking_type = request.thinking.get("type")
-    
+
     if thinking_type == "disabled":
         # Explicitly disabled
         return ThinkingConfig(enabled=False, budget_tokens=None)
     
-    if thinking_type == "enabled":
+    if thinking_type in ("enabled", "adaptive"):
         # Extract budget_tokens
         budget = request.thinking.get("budget_tokens")
+        
+        # If adaptive and no budget is specified, map effort to an estimated budget
+        if thinking_type == "adaptive" and budget is None:
+            # Effort can be a root-level parameter, inside output_config, or inside the thinking block
+            effort = getattr(request, "effort", None)
+            if not effort and getattr(request, "output_config", None):
+                effort = request.output_config.get("effort")
+            if not effort:
+                effort = request.thinking.get("effort", "medium")
+            
+            if effort == "low":
+                budget = 2048
+            elif effort == "medium":
+                budget = 4096
+            elif effort == "high":
+                budget = 8192
+            elif effort == "max":
+                budget = 16384
+                
         # DIAGNOSTIC: Log raw inputs
-        logger.info(f"DEBUG_THINKING_ANTHROPIC: type='enabled', raw_budget={budget}")
+        actual_effort = getattr(request, "effort", None)
+        if not actual_effort and getattr(request, "output_config", None):
+            actual_effort = request.output_config.get("effort")
+        if not actual_effort:
+            actual_effort = request.thinking.get('effort')
+            
+        logger.info(f"DEBUG_THINKING_ANTHROPIC: type='{thinking_type}', raw_budget={budget}, effort={actual_effort}")
         return ThinkingConfig(enabled=True, budget_tokens=budget)
     
     # DIAGNOSTIC: Log unexpected thinking type

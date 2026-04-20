@@ -38,6 +38,7 @@ from kiro.config import PROXY_API_KEY
 from kiro.models_anthropic import (
     AnthropicMessagesRequest,
     AnthropicMessagesResponse,
+    AnthropicCountTokensRequest,
     AnthropicErrorResponse,
     AnthropicErrorDetail,
 )
@@ -526,6 +527,58 @@ async def messages(
                 "error": {
                     "type": "api_error",
                     "message": f"Internal Server Error: {str(e)}"
+                }
+            }
+        )
+
+@router.post("/v1/messages/count_tokens", dependencies=[Depends(verify_anthropic_api_key)])
+async def count_tokens(
+    request: Request,
+    request_data: AnthropicCountTokensRequest,
+    anthropic_version: Optional[str] = Header(None, alias="anthropic-version")
+):
+    """
+    Anthropic Token Counting API endpoint.
+    
+    Compatible with Anthropic's /v1/messages/count_tokens endpoint.
+    Uses local tiktoken estimation with Claude BPE correction.
+    """
+    logger.info(f"Request to /v1/messages/count_tokens (model={request_data.model})")
+    
+    from kiro.tokenizer import estimate_request_tokens
+    
+    # Convert Pydantic models to dicts for tokenizer
+    messages_for_tokenizer = [msg.model_dump() for msg in request_data.messages]
+    tools_for_tokenizer = [tool.model_dump() for tool in request_data.tools] if request_data.tools else None
+    
+    if isinstance(request_data.system, list):
+        system_for_tokenizer = [b.model_dump() if hasattr(b, "model_dump") else b for b in request_data.system]
+    else:
+        system_for_tokenizer = request_data.system
+        
+    try:
+        # We apply claude correction by default
+        token_estimate = estimate_request_tokens(
+            messages=messages_for_tokenizer,
+            tools=tools_for_tokenizer,
+            system_prompt=system_for_tokenizer,
+            apply_claude_correction=True
+        )
+        
+        return JSONResponse(
+            content={
+                "input_tokens": token_estimate["total_tokens"]
+            }
+        )
+    except Exception as e:
+        logger.error(f"Error during token counting: {e}", exc_info=True)
+        return JSONResponse(
+            status_code=500,
+            content={
+                "type": "error",
+                "error": {
+                    "type": "api_error",
+                    "message": f"Internal Server Error during token estimation: {str(e)}"
                 }
             }
         )

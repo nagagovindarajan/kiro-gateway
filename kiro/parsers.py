@@ -27,6 +27,7 @@ Contains classes and functions for:
 - Content deduplication
 """
 
+import codecs
 import json
 import re
 from typing import Any, Dict, List, Optional
@@ -251,6 +252,7 @@ class AwsEventStreamParser:
     def __init__(self):
         """Initializes the parser."""
         self.buffer = ""
+        self.decoder = codecs.getincrementaldecoder('utf-8')(errors='replace')
         self.last_content: Optional[str] = None  # For deduplicating repeating content
         self.current_tool_call: Optional[Dict[str, Any]] = None
         self.tool_calls: List[Dict[str, Any]] = []
@@ -266,7 +268,7 @@ class AwsEventStreamParser:
             List of events in {"type": str, "data": Any} format
         """
         try:
-            self.buffer += chunk.decode('utf-8', errors='ignore')
+            self.buffer += self.decoder.decode(chunk)
         except Exception:
             return []
         
@@ -555,6 +557,7 @@ class AwsEventStreamParser:
     def reset(self) -> None:
         """Resets parser state."""
         self.buffer = ""
+        self.decoder.reset()
         self.last_content = None
         self.current_tool_call = None
         self.tool_calls = []
