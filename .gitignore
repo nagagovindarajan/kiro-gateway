@@ -31,3 +31,4 @@ requests/
 htmlcov/
 
 .venv
+secret_notes.txt
